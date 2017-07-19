@@ -15,8 +15,8 @@ def dae_model( img_shape ):
 	x0 = Input( img_shape )
 	x = x0
 	for i in range(n_convs):
-		x = Conv2D( conv_channels[i], (3,3), strides=(2,2),  activation='relu', padding='same' )(x)
-#		x = MaxPooling2D( (3,3) )(x)
+		x = Conv2D( conv_channels[i], (3,3),  activation='relu', padding='same' )(x)
+		x = MaxPooling2D( (2,2), strides=(2,2) )(x)
 		print(x.shape)
 	print('Starting deconv')
 	for i in range(n_convs-1):

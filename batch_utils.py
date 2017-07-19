@@ -14,7 +14,6 @@ def gen_batch( X, batch_size, augment=False, write_examples = False, randomize=F
 		Y_all = np.zeros( (batch_size,) + X.shape[1:] )
 
 		for i in range(batch_size):
-			print(idx)
 			if randomize:
 				idx = int(np.random.rand(1) * X.shape[0])
 			

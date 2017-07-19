@@ -8,7 +8,11 @@ import data_utils
 from sklearn.neighbors import NearestNeighbors
 import cv2
 
-def show_nn( im_file ):
+sys.path.append('../cnn_utils')
+from augment_utils import augSaturation,augBlur,augNoise,augScale,augRotate,randScale
+
+
+def show_nn( im_file, model_iters ):
 
 	with open('encodings.json','r') as ef:
 		encodings = json.load(ef)
@@ -28,22 +32,26 @@ def show_nn( im_file ):
 	_,encoding_im_files = data_utils.parse_ims_in_dir( '../datasets/MTGVS/train' )
 
 	in_dir = os.path.dirname( im_file) 
-	print(in_dir)
 	test_im = cv2.imread(im_file)
 	h = test_im.shape[0]
 	w = test_im.shape[1]
-	X,im_files = data_utils.parse_ims_in_dir( in_dir )
-	print(im_files)
-	idx = im_files.index(im_file)
-	print(im_files[idx])
 
-	X = np.reshape(X[idx,:,:,:],(1,)+X.shape[1:])
+	X,im_files = data_utils.parse_ims_in_dir( in_dir )
+	idx = im_files.index(im_file)
+	X = X[idx,:,:,:]
+
 	print(X.shape)
-	print(X)
-	X = np.reshape(np.multiply(test_im.astype(np.float32),1/255.0), (1,256,256,3))
-	cv2.imwrite('testim2.jpg', np.multiply(np.reshape(X,(256,256,3)),255))
-	test_encoding = run_autoencoder('test', X , model_file='./models/dae_epoch_10.h5')
-	print(test_encoding)
+	scale = randScale(0.9,1.1)
+	print(scale)
+	X,_ = augRotate(X, None, 15, border_color=(255,255,255))
+	X,_ = augScale(X, None, scale, border_color=(255,255,255) )
+	X = augSaturation( X,0.1 )
+	X = augNoise(X,0.01)
+	X = augBlur(X)
+	X = np.reshape(X,(1,256,256,3))
+#	X = np.reshape(np.multiply(X.astype(np.float32),1/255.0), (1,256,256,3))
+	test_encoding = run_autoencoder('predict', X, None,  model_file='./models/dae_epoch_{}.h5'.format(model_iters))
+	#print(test_encoding)
 
 	im_num = re.search( '[0-9]*(?=.jpg)', os.path.basename(im_file) ).group(0)
 	print(im_num)
@@ -56,7 +64,7 @@ def show_nn( im_file ):
 	print(dists)
 	out_im = np.zeros( (h*5, w*2, 3), dtype=np.float32 )
 
-	out_im[:h, :w, :] = np.multiply(X,255)
+	out_im[:h, :w, :] = np.multiply(np.reshape(X,(256,256,3)),255)
 	im_count = 0
 	for ni in idxs[0]:
 		print(ni)
@@ -70,4 +78,4 @@ def show_nn( im_file ):
 #	print(neighbor_im_files)
 
 if __name__ == '__main__':
-	show_nn( sys.argv[1] )
+	show_nn( sys.argv[1], sys.argv[2] )
