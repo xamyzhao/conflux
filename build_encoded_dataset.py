@@ -8,9 +8,10 @@ import re
 import data_utils
 import cv2
 
-def build_database( epoch_num, dataset_root ):
-	model_file = './models/dae_epoch_{}.h5'.format(epoch_num)
-	database_name = 'encodings_dae_epoch_{}.json'.format(epoch_num)
+def build_database( model_file, dataset_root ):
+#	model_file = './models/dae_epoch_{}.h5'.format(epoch_num)
+	model_name = os.path.splitext( os.path.basename( model_file ) )[0]
+	database_name = 'encodings_{}.json'.format( model_name )
 #	im_names = [f for f in os.listdir(dataset_dir) if f.endswith('.jpg') ]
 	dataset_dirs = [ os.path.join(dataset_root,d) for d in os.listdir(dataset_root) if os.path.isdir( os.path.join(dataset_root, d) )]
 

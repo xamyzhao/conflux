@@ -33,7 +33,8 @@ def load_encoding_database( encoding_file ):
 	 	im_count += 1
 	return encodings_mat, encoding_im_names
 
-def find_nns_for_ims( query_im_files, model_name, augment = False ):
+def find_nns_for_ims( query_im_files, model_file, augment = False ):
+	model_name = os.path.splitext(os.path.basename( model_file ))[0]
 	encodings_db, encodings_db_im_names = load_encoding_database( 'encodings_{}.json'.format(model_name) )
 
 	n_queries = len(query_im_files )
@@ -58,7 +59,7 @@ def find_nns_for_ims( query_im_files, model_name, augment = False ):
 			X[idx] = augBlur(X[idx])
 #	X = np.reshape(X,(1,256,256,3))
 	
-	model_file = os.path.join( './models', model_name + '.h5' )
+#	model_file = os.path.join( './models', model_name + '.h5' )
 	encodings_query = autoencoder_runner.predict( model_file, X )
 
 	dists = [None] * n_queries

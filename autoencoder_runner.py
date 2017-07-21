@@ -40,7 +40,7 @@ def load_dae_model(model_file, cutoff_at_encoding_layer = False):
 	model.summary()
 	if cutoff_at_encoding_layer:
 		# if evaluating model on images, extract only the encoding
-		model = Model(inputs=model.input, outputs=model.get_layer('max_pooling2d_8').output)
+		model = Model(inputs=model.input, outputs=model.get_layer('dae_conv2D_7').output)
 #		model.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
 	return model
 	
