@@ -32,20 +32,23 @@ def eval_on_batch( model, batch_gen, logger, ex_count ):
 
 
 def load_dae_model(model_file, cutoff_at_encoding_layer = False):
+	model = None
 	if model_file is not None and os.path.isfile(model_file):
 		print(model_file)
+		print(model)
 		model = load_model( model_file )
 	model.summary()
 	if cutoff_at_encoding_layer:
 		# if evaluating model on images, extract only the encoding
 		model = Model(inputs=model.input, outputs=model.get_layer('max_pooling2d_8').output)
+#		model.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
 	return model
 	
 def run_autoencoder( mode, X_train=None, X_test=None, model=None, start_epoch=0, end_epoch=1 ):
-	print(mode)
 	n_ims = X_train.shape[0]
 	batch_size = min(n_ims,8)
 	n_batches_per_epoch = int( math.ceil(n_ims / float(batch_size)))
+	print('Running model {} in mode {} on {} ims'.format(model.name, mode, n_ims))
 
 	test_every_n_epochs = 5
 	
@@ -84,10 +87,10 @@ def run_autoencoder( mode, X_train=None, X_test=None, model=None, start_epoch=0,
 				X_encoded[ batch_start_idx:batch_end_idx,:] = np.reshape( Y_out[:batch_size_to_keep,:,:,:], (batch_size_to_keep,encoding_length) )
 
 		if mode == 'train':	# evaluate on test set
-			if epoch > 0 and (epoch+1) % 10 == 0:
+			if epoch > 0 and epoch % 50 == 0:
 				print('Saving model')
 				model.save( './models/dae_epoch_{}.h5'.format(epoch))
-			if epoch > 0 and (epoch+1) % test_every_n_epochs == 0:
+			if epoch > 0 and epoch % test_every_n_epochs == 0:
 				X_batch_test, Y_batch_test = next( batch_gen_test )
 #				loss = eval_on_batch( model, batch_gen_test, tbw, epoch*n_batches_per_epoch + batch  )
 				loss = model.evaluate( [X_batch_test], [Y_batch_test] )
@@ -105,13 +108,12 @@ def run_autoencoder( mode, X_train=None, X_test=None, model=None, start_epoch=0,
 					out_im[ i*h:(i+1)*h, 3*w:4*w, :] = test_out[i,:,:,:]
 				cv2.imwrite('dae_output_epoch_{}.jpg'.format(epoch), np.multiply(out_im,255))
 	if mode=='predict':
-		print(np.max(X_encoded))
 		return X_encoded
 
-def train_dae( model_file ):
+def train( model_file ):
 	X_train,_ = data_utils.parse_ims_in_dir('../datasets/MTGVS/train')
 	X_test,_ = data_utils.parse_ims_in_dir('../datasets/MTGVS/test')
-	max_n_epochs = 200
+	max_n_epochs = 300 + 1
 
 	if model_file is not None:
 		model = load_dae_model(model_file)
@@ -123,11 +125,13 @@ def train_dae( model_file ):
 	run_autoencoder( 'train', X_train, X_test, model, start_epoch, max_n_epochs )
 
 
-def predict_dae( model_file, X ):
+def predict( model_file, X ):
 	model = load_dae_model(model_file, cutoff_at_encoding_layer = True)
-	start_epoch = int(re.search( '(?<=epoch_)[0-9]*', os.path.basename(model_file)).group(0)) + 1
-	end_epoch = start_epoch + 1
-	run_autoencoder( 'train', X, None, model, start_epoch, end_epoch )
+#	start_epoch = int(re.search( '(?<=epoch_)[0-9]*', os.path.basename(model_file)).group(0)) + 1
+#	end_epoch = start_epoch + 1
+	start_epoch = 0
+	end_epoch = 1
+	return run_autoencoder( 'predict', X, None, model, start_epoch, end_epoch )
 		
 
 if __name__ == '__main__':
@@ -137,8 +141,8 @@ if __name__ == '__main__':
 	args = ap.parse_args()
 	print(args)
 
-	if mode=='train':
-		train_dae( model_file )
+	if args.mode=='train':
+		train( args.model_file )
 	else:
 		print('Unable to directly run a mode other than train')
 		#predict_dae( model_file, X_train) 
