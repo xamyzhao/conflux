@@ -73,7 +73,6 @@ def find_nns_for_ims( query_im_files, model_file, augment = False ):
 
 
 def find_nns( encoding_query, encodings_db, im_file_query, encodings_db_im_files, nn=5, save_results=True ):
-	print('Finding nearest neighbor encodings for query image {}'.format(im_file_query))
 	query_im = cv2.imread(im_file_query)
 	h = query_im.shape[0]
 	w = query_im.shape[1]
