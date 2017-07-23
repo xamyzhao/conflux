@@ -24,7 +24,10 @@ def eval_accuracy( model_file ):
 		dists, match_names = encoding.find_nns_for_ims( im_files_to_eval, model_file, augment=True )
 
 		for idx in range( n_eval ):
-			if os.path.basename( im_files_to_eval[idx] ) in match_names[idx]:
+			im_file = os.path.basename( im_files_to_eval[idx] ) 
+			print(im_file)
+			print(match_names[idx])
+			if im_file in match_names[idx]:
 				n_correct += 1
 
 		#encoding_mat, encoding_im_names = encoding.load_encoding_database('encodings.py')
@@ -36,7 +39,7 @@ def eval_accuracy( model_file ):
 	#		dists, matches = nn_by_encoding.find_nn( ims_train[i], model, encoding_mat, encoding_im_names )
 	#		if im_num in matches:
 	#			n_correct += 1
-
+		print('Num correct: {}'.format(n_correct))
 		print('% correct: {}'.format( float(n_correct)/n_eval))
 
 
