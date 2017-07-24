@@ -25,7 +25,6 @@ def gen_batch( X, batch_size, augment=False, write_examples = False, randomize=F
 		for i in range(batch_size):
 			if randomize:
 				idx = int(np.random.rand(1) * X.shape[0])
-			print(idx)			
 			X_out = X[idx,:,:,:]
 			Y = X_out.copy().astype(np.float32)
 

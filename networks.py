@@ -73,12 +73,12 @@ def siamese_tower( img_shape, name_prefix ):
 		x = Conv2D( n_channels[i], kernel_size=ks, strides=(2,2), activation='relu', padding='same', name='{}_conv2D_{}'.format( name_prefix,i ))(x)
 
 	x = Flatten()(x)
-	y = Dense( 512 )(x)
-#	y = Conv2D( n_channels[-1], kernel_size=ks, strides=(2,2), activation='relu', padding='same', name='{}_conv2D_encoding'.format( name_prefix ))(x)
+	y = Dense( 512, name='dense_encoding' )(x)
 
 	model = Model( inputs = x0, outputs = y, name= name_prefix )
 	return model
 
+# from keras siamese tutorial
 def contrastive_loss(y_true, y_pred):
     '''Contrastive loss from Hadsell-et-al.'06
     http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
@@ -87,22 +87,22 @@ def contrastive_loss(y_true, y_pred):
     return K.mean(y_true * K.square(y_pred) +
                   (1 - y_true) * K.square(K.maximum(margin - y_pred, 0)))
 
+# from keras siamese tutorial
 def euclidean_distance(vects):
     x, y = vects
     return K.sqrt(K.maximum(K.sum(K.square(x - y), axis=1, keepdims=True), K.epsilon()))
 
-
+# from keras siamese tutorial
 def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
     return (shape1[0], 1)
 
 
+# this siamese model shares weights between the towers
 def siamese_model( img_shape, tower_model ):
 	input_A = Input( img_shape )
 	input_B = Input( img_shape )
 
-#	tower_A = siamese_tower( img_shape, 'tower_A')
-#	tower_B = siamese_tower( img_shape, 'tower_B')
 	tower_model.summary()
 	x_A = tower_model( input_A )
 	x_B = tower_model( input_B )
@@ -123,6 +123,7 @@ def make_model( model_name ):
 		model = dae_stackedconv_model( img_shape )
 		model.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
 	elif 'siamese' in model_name:
+		# make only one tower since we're shaing weights
 		model_tower = siamese_tower( (256,256,3), 'tower' )
 		model_tower.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
 
@@ -142,5 +143,3 @@ if __name__ == '__main__':
 		make_model( sys.argv[1] )
 	else:
 		make_model('dae')
-			
-

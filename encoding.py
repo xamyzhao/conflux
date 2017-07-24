@@ -46,8 +46,8 @@ def find_nns_for_ims( query_im_files, model_file, augment = False, save_results=
 	
 	encoding_orderings = [ database_im_names.index(n) for n in encodings_db_im_names ]
 	edb_im_files_ordered = [ database_im_files[i] for i in encoding_orderings ]
-	print(encodings_db_im_names[:10])
-	print(edb_im_files_ordered[:10])
+#	print(encodings_db_im_names[:10])
+#	print(edb_im_files_ordered[:10])
 
 	encoding_len = encodings_db.shape[1]
 
