@@ -34,7 +34,7 @@ def load_encoding_database( encoding_file ):
 	return encodings_mat, encoding_im_names
 
 
-def find_nns_for_ims( query_im_files, model_file, augment = False, save_results=True ):
+def find_nns_for_ims( query_im_files, model_file, augment = False, save_results=True, nn=5 ):
 	model_name = os.path.splitext(os.path.basename( model_file ))[0]
 	encodings_db, encodings_db_im_names = load_encoding_database( 'encodings_{}.json'.format(model_name) )
 
@@ -75,7 +75,6 @@ def find_nns_for_ims( query_im_files, model_file, augment = False, save_results=
 	dists = [None] * n_queries
 	nn_names = [None] * n_queries
 
-	nn = 5
 	out_im = np.zeros( (h*nn, w*2, 3), dtype=np.float32 )
 
 	for idx in range(encodings_query.shape[0]):

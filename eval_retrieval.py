@@ -8,6 +8,8 @@ import encoding
 dataset_root = '../datasets/MTGVS'
 
 def eval_accuracy( model_file ):
+	nn = 1 # define accuracy as whether correct match is in the top 1 nearest neighbors
+	
 	for d in os.listdir(dataset_root):
 		dataset_dir = os.path.join( dataset_root, d)
 		if not os.path.isdir(dataset_dir):
@@ -21,7 +23,7 @@ def eval_accuracy( model_file ):
 		print('Evaluating accuracy for {} ims from {}'.format(n_eval, dataset_dir))
 
 		im_files_to_eval = [ im_files[i] for i in np.linspace(0, n_ims-1, n_eval, dtype=int) ]
-		dists, match_names = encoding.find_nns_for_ims( im_files_to_eval, model_file, augment=True )
+		dists, match_names = encoding.find_nns_for_ims( im_files_to_eval, model_file, augment=True, nn=1 )
 
 		for idx in range( n_eval ):
 			im_file = os.path.basename( im_files_to_eval[idx] ) 

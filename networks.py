@@ -78,6 +78,24 @@ def siamese_tower( img_shape, name_prefix ):
 	model = Model( inputs = x0, outputs = y, name= name_prefix )
 	return model
 
+def siamese_tower_vgg19likeconvs( img_shape, name_prefix ):
+	ks = 3
+	x0 = Input( img_shape, name='{}_input'.format(name_prefix) )
+	
+	n_channels = [ 64, 128, 256, 256, 512, 512 ]
+	x = x0
+	for i in range(len(n_channels)):
+		x = Conv2D( n_channels[i], kernel_size=ks, activation='relu', padding='same', name='{}_conv2D_{}_1'.format( name_prefix,i ))(x)
+		x = Conv2D( n_channels[i], kernel_size=ks, activation='relu', padding='same', name='{}_conv2D_{}_2'.format( name_prefix,i ))(x)
+		x = MaxPooling2D( (2,2), strides=(2,2), name='{}_pool_{}'.format( name_prefix, i))(x)
+
+	x = Flatten()(x)
+	y = Dense( 512, name='dense_1' )(x)
+	y = Dense( 512, name='dense_encoding' )(x)
+
+	model = Model( inputs = x0, outputs = y, name= name_prefix )
+	return model
+
 # from keras siamese tutorial
 def contrastive_loss(y_true, y_pred):
     '''Contrastive loss from Hadsell-et-al.'06
@@ -122,12 +140,22 @@ def make_model( model_name ):
 	elif model_name == 'dae_stackedconv':
 		model = dae_stackedconv_model( img_shape )
 		model.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
-	elif 'siamese' in model_name:
+	elif model_name == 'siamese':
 		# make only one tower since we're shaing weights
 		model_tower = siamese_tower( (256,256,3), 'tower' )
 		model_tower.compile( optimizer='adam', lr=2e-4, loss='mean_absolute_error' )
 
 		model = siamese_model( (256,256,3), model_tower )
+		model.compile( optimizer='adam', lr=2e-4, loss=contrastive_loss )
+
+		models = [model_tower, model]
+	elif model_name == 'siamese_vgg19likeconvs':
+		# make only one tower since we're shaing weights
+		model_tower = siamese_tower_vgg19likeconvs( (256,256,3), 'tower_vgg19likeconvs' )
+		model_tower.compile( optimizer='adam', lr=1e-5, loss='mean_absolute_error' )
+
+		model = siamese_model( (256,256,3), model_tower )
+		model.name=model_name
 		model.compile( optimizer='adam', lr=2e-4, loss=contrastive_loss )
 
 		models = [model_tower, model]

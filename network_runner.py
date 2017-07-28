@@ -64,7 +64,7 @@ def run_autoencoder( mode, batch_gen_train=None, batch_gen_test=None, n_ims = 0,
 		X_encoded = np.zeros( (n_ims,encoding_length))
 
 	# track training and test loss using tensorboard
-	tbw = tf.summary.FileWriter('./logs/')
+	tbw = tf.summary.FileWriter('./logs/' + model_name)
 
 	for epoch in range(start_epoch, end_epoch):
 		print('Epoch {} of {}'.format(epoch, end_epoch))
