@@ -18,7 +18,7 @@ def eval_accuracy( model_file ):
 		im_files = [ os.path.join(dataset_dir,f) for f in os.listdir(dataset_dir) if f.endswith('.jpg') ]
 		n_ims = len(im_files )
 
-		n_eval = min(100, n_ims)
+		n_eval = min(500, n_ims)
 		n_correct = 0
 		print('Evaluating accuracy for {} ims from {}'.format(n_eval, dataset_dir))
 

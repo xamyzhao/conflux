@@ -7,7 +7,7 @@ import cv2
 
 def aug_im( Y ):
 	scale = randScale(0.8,1.2)
-	Y,_ = augRotate(Y, None, 15, border_color=(255,255,255))
+	Y,_ = augRotate(Y, None, 10, border_color=(255,255,255))
 	Y,_ = augScale(Y, None, scale, border_color=(255,255,255) )
 	Y = augSaturation( Y,0.1 )
 	Y = augNoise(Y,0.02)
@@ -17,31 +17,37 @@ def aug_im( Y ):
 
 def gen_batch( X, batch_size, augment=False, write_examples = False, randomize=False ):
 	np.random.seed(17)
-	idx = 0
+	idx = -1
+
 	while True:
 		X_out_all = np.zeros( (batch_size,) + X.shape[1:] )
 		Y_all = np.zeros( (batch_size,) + X.shape[1:] )
 
+			
 		for i in range(batch_size):
 			if randomize:
-				idx = int(np.random.rand(1) * X.shape[0])
+				idx = int(np.floor(np.random.rand(1) * X.shape[0]))
+			else:
+				idx += 1
+				if idx >= X.shape[0]:
+					print('Resetting generator index to 0')
+					idx = 0
+					np.random.seed(17) # make sure all the same augmentations happen				
+	
 			X_out = X[idx,:,:,:]
 			Y = X_out.copy().astype(np.float32)
 
 			if augment:
 				X_out = aug_im( X_out )
-
-			if not randomize:
-				idx += 1
-				if idx >= X.shape[0]:
-					idx = 0
-			X_out_all[i,:,:,:] = X_out
-			Y_all[i,:,:,:] = Y
-			
+		
+			X_out_all[i,:,:,:] = X_out.copy()
+			Y_all[i,:,:,:] = Y.copy()
 
 		if write_examples:
 			cv2.imwrite( './examples_train/train_ex_{}.jpg'.format(idx), compile_ae_results(X_out_all,None,Y_all)) 
+		
 		yield X_out_all, Y_all
+
 
 def gen_siamese_batch( X, batch_size, augment=True, write_examples = False, randomize = False ):
 	batch_count = 0
@@ -49,14 +55,13 @@ def gen_siamese_batch( X, batch_size, augment=True, write_examples = False, rand
 
 	while True:
 		X_A, X_B = next( batch_gen )
-	
 		y = np.ones( (batch_size,1), dtype=np.float32 )
 		split_idx = int(batch_size/2)
 		# split batch so that half of it is unmatched
 		X_A[split_idx:] = X_A[-1:split_idx-1:-1]
 		y[split_idx:] = np.zeros( (batch_size-split_idx,1), dtype=np.float32 )
 
-		if write_examples and batch_count % 100 == 0:
+		if write_examples and batch_count % 50 == 0:
 			out_im = compile_siamese_results( [X_A, X_B], None, y )
 			cv2.imwrite( './examples_train/siamese_ex_{}.jpg'.format(batch_count), out_im )
 

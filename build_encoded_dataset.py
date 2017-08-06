@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-import autoencoder_runner
+import network_runner
 #import data_utils
 import numpy as np 
 import re
@@ -25,7 +25,7 @@ def build_database( model_file, dataset_root ):
 		else:
 			X = np.append(X, X_curr, axis=0)
 
-	encodings = autoencoder_runner.predict( model_file, X ) 
+	encodings = network_runner.predict( model_file, X ) 
 	im_encodings = dict()
 	im_count = 0
 	for im_name in im_names:
