@@ -99,14 +99,14 @@ def run_network( 	mode,
 					val_loss = 0
 					for tbi in range( nb_per_epoch_test ):
 						X_batch_val, Y_batch_val = next( batch_gen_val )
-						loss = model.evaluate( X_batch_val, Y_batch_val )
+						loss = model.evaluate( X_batch_val, Y_batch_val, verbose=0 )
 						val_loss += loss
 
 					tbw.add_summary( tf.Summary( value=[tf.Summary.Value(tag='{}_validation'.format(model_name), simple_value = float(val_loss)/nb_per_epoch_test ),]), total_batch_count )
 
 					# save output images only for the last test batch
-					train_out = model.predict( X_batch_train )
-					val_out = model.predict( X_batch_val ) 
+					train_out = model.predict( X_batch_train, verbose=0 )
+					val_out = model.predict( X_batch_val, verbose=0 ) 
 
 					if not siamese:
 						out_im 	= batch_utils.compile_ae_results( np.concatenate( [X_batch_train, X_batch_val] ), 

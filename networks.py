@@ -90,8 +90,8 @@ def siamese_tower_vgg19likeconvs( img_shape, name_prefix ):
 		x = MaxPooling2D( (2,2), strides=(2,2), name='{}_pool_{}'.format( name_prefix, i))(x)
 
 	x = Flatten()(x)
-	y = Dense( 512, name='dense_1' )(x)
-	y = Dense( 512, name='dense_encoding' )(x)
+	y = Dense( 2048, name='dense_1' )(x)
+	y = Dense( 2048, name='dense_encoding' )(x)
 
 	model = Model( inputs = x0, outputs = y, name= name_prefix )
 	return model
@@ -156,7 +156,7 @@ def make_model( model_name ):
 
 		model = siamese_model( (256,256,3), model_tower )
 		model.name=model_name
-		model.compile( optimizer='adam', lr=2e-4, loss=contrastive_loss )
+		model.compile( optimizer='adam', lr=1e-5, loss=contrastive_loss )
 
 		models = [model_tower, model]
 	model.summary()
